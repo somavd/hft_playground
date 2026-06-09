@@ -100,7 +100,145 @@ void test_atomic()
 }
 
 // --------------------------------------------------
-// Test 3 : Mutex
+// Test 3 : Fetch Add - Relaxed
+// --------------------------------------------------
+
+std::atomic<int> fetch_add_relaxed_counter{0};
+
+void fetch_add_relaxed_worker()
+{
+    for (int i = 0; i < ITERATIONS; ++i)
+    {
+        fetch_add_relaxed_counter.fetch_add(1, std::memory_order_relaxed);
+    }
+}
+
+void test_fetch_add_relaxed()
+{
+    fetch_add_relaxed_counter = 0;
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    std::thread t1(fetch_add_relaxed_worker);
+    std::thread t2(fetch_add_relaxed_worker);
+
+    t1.join();
+    t2.join();
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto duration =
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            end - start);
+
+    std::cout << "===== Fetch Add (Relaxed) =====\n";
+    std::cout << "Expected : "
+              << NUM_THREADS * ITERATIONS
+              << "\n";
+
+    std::cout << "Actual   : "
+              << fetch_add_relaxed_counter.load()
+              << "\n";
+
+    std::cout << "Time     : "
+              << duration.count()
+              << " ms\n\n";
+}
+
+// --------------------------------------------------
+// Test 4 : Fetch Add - Acquire Release
+// --------------------------------------------------
+
+std::atomic<int> fetch_add_acq_rel_counter{0};
+
+void fetch_add_acq_rel_worker()
+{
+    for (int i = 0; i < ITERATIONS; ++i)
+    {
+        fetch_add_acq_rel_counter.fetch_add(1, std::memory_order_acq_rel);
+    }
+}
+
+void test_fetch_add_acq_rel()
+{
+    fetch_add_acq_rel_counter = 0;
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    std::thread t1(fetch_add_acq_rel_worker);
+    std::thread t2(fetch_add_acq_rel_worker);
+
+    t1.join();
+    t2.join();
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto duration =
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            end - start);
+
+    std::cout << "===== Fetch Add (Acquire-Release) =====\n";
+    std::cout << "Expected : "
+              << NUM_THREADS * ITERATIONS
+              << "\n";
+
+    std::cout << "Actual   : "
+              << fetch_add_acq_rel_counter.load()
+              << "\n";
+
+    std::cout << "Time     : "
+              << duration.count()
+              << " ms\n\n";
+}
+
+// --------------------------------------------------
+// Test 5 : Fetch Add - Sequentially Consistent
+// --------------------------------------------------
+
+std::atomic<int> fetch_add_seq_cst_counter{0};
+
+void fetch_add_seq_cst_worker()
+{
+    for (int i = 0; i < ITERATIONS; ++i)
+    {
+        fetch_add_seq_cst_counter.fetch_add(1, std::memory_order_seq_cst);
+    }
+}
+
+void test_fetch_add_seq_cst()
+{
+    fetch_add_seq_cst_counter = 0;
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    std::thread t1(fetch_add_seq_cst_worker);
+    std::thread t2(fetch_add_seq_cst_worker);
+
+    t1.join();
+    t2.join();
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto duration =
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            end - start);
+
+    std::cout << "===== Fetch Add (Sequentially Consistent) =====\n";
+    std::cout << "Expected : "
+              << NUM_THREADS * ITERATIONS
+              << "\n";
+
+    std::cout << "Actual   : "
+              << fetch_add_seq_cst_counter.load()
+              << "\n";
+
+    std::cout << "Time     : "
+              << duration.count()
+              << " ms\n\n";
+}
+
+// --------------------------------------------------
+// Test 6 : Mutex
 // --------------------------------------------------
 
 int mutex_counter = 0;
@@ -153,6 +291,9 @@ int main()
 {
     test_plain();
     test_atomic();
+    test_fetch_add_relaxed();
+    test_fetch_add_acq_rel();
+    test_fetch_add_seq_cst();
     test_mutex();
 
     return 0;
