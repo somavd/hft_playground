@@ -25,6 +25,10 @@ hft_playground/
 └── performance_comparison/              # Comprehensive performance suite
     ├── performance_comparison.cpp      # All benchmarks in one file
     └── README.md                       # Performance analysis guide
+└── memory_mapped_files/                # Memory-mapped files and shared memory
+    ├── basic_mmap.cpp                  # Basic memory-mapped file operations
+    ├── shared_memory.cpp               # Inter-process communication
+    └── README.md                       # Detailed explanations
 ```
 
 ## 🚀 Quick Start
@@ -82,6 +86,19 @@ g++ -O3 -std=c++20 -pthread performance_comparison.cpp -o performance_comparison
 ./performance_comparison
 ```
 
+#### Memory-Mapped Files
+```bash
+cd memory_mapped_files
+
+# Basic memory-mapped file operations
+g++ -O3 -std=c++20 -pthread basic_mmap.cpp -o basic_mmap
+./basic_mmap
+
+# Shared memory demonstration
+g++ -O3 -std=c++20 -pthread shared_memory.cpp -o shared_memory
+./shared_memory
+```
+
 ## 📊 Benchmark Categories
 
 ### 1. **Atomic Operations** (`atomic/`)
@@ -109,6 +126,12 @@ g++ -O3 -std=c++20 -pthread performance_comparison.cpp -o performance_comparison
 - Side-by-side performance analysis
 - Detailed timing comparisons
 
+### 6. **Memory-Mapped Files** (`memory_mapped_files/`)
+- Zero-copy I/O operations
+- Inter-process communication via shared memory
+- High-performance file access patterns
+- HFT-specific use cases
+
 ## 📚 Concepts Covered
 
 ### Atomic Operations
@@ -130,6 +153,12 @@ g++ -O3 -std=c++20 -pthread performance_comparison.cpp -o performance_comparison
 - Understanding undefined behavior
 - Importance of proper synchronization
 - Real-world implications
+
+### Memory-Mapped Files
+- Zero-copy I/O operations
+- Shared memory for inter-process communication
+- High-performance file access
+- HFT market data distribution
 
 ## 🔧 Performance Analysis
 
