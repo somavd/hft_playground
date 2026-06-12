@@ -61,22 +61,5 @@ int main() {
         std::cout << "Atomic is " << speedup << "x faster than mutex\n";
     }
     
-    std::cout << "\nKey Insights:\n";
-    std::cout << "- Mutex provides traditional locking mechanism\n";
-    std::cout << "- Atomic provides lock-free operations\n";
-    std::cout << "- Atomic operations typically outperform mutex\n";
-    std::cout << "- Mutex overhead comes from kernel-level synchronization\n";
-    std::cout << "- Atomic operations use CPU-level instructions\n";
-    
-    std::cout << "\nWhen to use Mutex:\n";
-    std::cout << "- Complex critical sections\n";
-    std::cout << "- Multiple operations need to be atomic\n";
-    std::cout << "- Legacy code compatibility\n";
-    
-    std::cout << "\nWhen to use Atomic:\n";
-    std::cout << "- Simple operations (increment, decrement)\n";
-    std::cout << "- High-performance requirements\n";
-    std::cout << "- Lock-free programming\n";
-    
     return 0;
 }
