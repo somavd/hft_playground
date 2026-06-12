@@ -6,20 +6,17 @@ This directory contains comprehensive performance comparisons between different 
 
 ```
 performance_comparison/
-├── src.cpp                    # Main comparison suite with all tests
-├── README.md                  # This file
-├── normal_vs_atomic/          # Normal vs atomic counter comparison
-├── memory_relaxed/           # Relaxed memory order benchmarks
-├── memory_acquire_release/   # Acquire-release memory order benchmarks
-└── memory_sequential/        # Sequential consistency benchmarks
+├── performance_comparison.cpp  # Main comparison suite with all tests
+├── README.md                   # This file
+└── performance_comparison    # Compiled benchmark executable
 ```
 
 ## 🚀 Running the Main Comparison Suite
 
 ```bash
 cd performance_comparison
-g++ -O3 -std=c++20 -pthread src.cpp -o comparison
-./comparison
+g++ -O3 -std=c++20 -pthread performance_comparison.cpp -o performance_comparison
+./performance_comparison
 ```
 
 ## 📊 Comparison Categories
