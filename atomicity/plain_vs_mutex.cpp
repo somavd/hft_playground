@@ -3,8 +3,8 @@
 #include <mutex>
 #include <chrono>
 
-constexpr int NUM_THREADS = 2;
-constexpr int ITERATIONS = 10'000'000;
+constexpr int NUM_THREADS = 8;  // More threads = more contention
+constexpr int ITERATIONS = 1'000'000;
 
 // Plain counter - no synchronization (data race!)
 int plain_counter = 0;
@@ -15,14 +15,18 @@ std::mutex mtx;
 
 void plain_worker() {
     for (int i = 0; i < ITERATIONS; ++i) {
-        plain_counter++;  // Data race: read-modify-write not atomic
+        int temp = plain_counter;  // Read
+        temp++;                    // Modify
+        plain_counter = temp;      // Write (expanded to increase race window)
     }
 }
 
 void mutex_worker() {
     for (int i = 0; i < ITERATIONS; ++i) {
         std::lock_guard<std::mutex> lock(mtx);
-        mutex_counter++;  // Protected by mutex
+        int temp = mutex_counter;
+        temp++;
+        mutex_counter = temp;
     }
 }
 
@@ -40,8 +44,20 @@ int main() {
     auto start1 = getTime();
     std::thread t1(plain_worker);
     std::thread t2(plain_worker);
+    std::thread t3(plain_worker);
+    std::thread t4(plain_worker);
+    std::thread t5(plain_worker);
+    std::thread t6(plain_worker);
+    std::thread t7(plain_worker);
+    std::thread t8(plain_worker);
     t1.join();
     t2.join();
+    t3.join();
+    t4.join();
+    t5.join();
+    t6.join();
+    t7.join();
+    t8.join();
     auto end1 = getTime();
     auto plain_time = std::chrono::duration_cast<std::chrono::milliseconds>(end1 - start1).count();
 
@@ -53,10 +69,22 @@ int main() {
     // Test mutex counter (synchronized)
     mutex_counter = 0;
     auto start2 = getTime();
-    std::thread t3(mutex_worker);
-    std::thread t4(mutex_worker);
-    t3.join();
-    t4.join();
+    std::thread t9(mutex_worker);
+    std::thread t10(mutex_worker);
+    std::thread t11(mutex_worker);
+    std::thread t12(mutex_worker);
+    std::thread t13(mutex_worker);
+    std::thread t14(mutex_worker);
+    std::thread t15(mutex_worker);
+    std::thread t16(mutex_worker);
+    t9.join();
+    t10.join();
+    t11.join();
+    t12.join();
+    t13.join();
+    t14.join();
+    t15.join();
+    t16.join();
     auto end2 = getTime();
     auto mutex_time = std::chrono::duration_cast<std::chrono::milliseconds>(end2 - start2).count();
 
