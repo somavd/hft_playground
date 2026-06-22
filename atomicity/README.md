@@ -175,5 +175,3 @@ log_transaction(amount);     // Can't do this with atomic alone
 1. **Plain operations on shared data are unsafe** — data races cause undefined behavior
 2. **Mutex provides atomicity** — ensures operations complete without interference
 3. **Correctness > Performance** — a fast wrong answer is useless
-4. **Use atomic for simple cases** — faster than mutex for single variables
-5. **Use mutex for complex cases** — protects entire critical sections
