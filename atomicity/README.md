@@ -31,20 +31,34 @@ Threads: 8, Iterations per thread: 1000000
 Expected result: 8000000
 
 Plain Counter (no synchronization):
-  Result: 4567890 (Expected: 8000000)
-  Time: 120 ms
+  Result: 1237405 (Expected: 8000000)
+  Time: 21 ms
   Status: WRONG - Data race!
 
 Mutex Counter (synchronized):
   Result: 8000000 (Expected: 8000000)
-  Time: 450 ms
+  Time: 301 ms
   Status: CORRECT
 ```
 
 **With `-O3` (optimization):**
-The plain counter may show the "correct" result because the compiler optimizes the expanded read-modify-write into a single atomic instruction. This is **undefined behavior** — the code is still buggy, but the compiler accidentally "fixes" it.
+```
+=== Atomicity Demo: Plain vs Mutex ===
+Threads: 8, Iterations per thread: 1000000
+Expected result: 8000000
 
-So just for demo purpose, I am using `-O0` flag
+Plain Counter (no synchronization):
+  Result: 8000000 (Expected: 8000000)
+  Time: 1 ms
+  Status: CORRECT
+
+Mutex Counter (synchronized):
+  Result: 8000000 (Expected: 8000000)
+  Time: 298 ms
+  Status: CORRECT
+```
+
+**Note:** With `-O3`, the plain counter may show the "correct" result because the compiler optimizes the expanded read-modify-write into a single atomic instruction. This is **undefined behavior** — the code is still buggy, but the compiler accidentally "fixes" it. For demonstration purposes, use `-O0` to see the actual data race bug.
 
 ## What is Atomicity?
 
@@ -64,7 +78,9 @@ int plain_counter = 0;
 
 void plain_worker() {
     for (int i = 0; i < ITERATIONS; ++i) {
-        plain_counter++;  // Data race!
+        int temp = plain_counter;  // Read
+        temp++;                    // Modify
+        plain_counter = temp;      // Write (expanded to increase race window)
     }
 }
 ```
@@ -105,7 +121,9 @@ std::mutex mtx;
 void mutex_worker() {
     for (int i = 0; i < ITERATIONS; ++i) {
         std::lock_guard<std::mutex> lock(mtx);
-        mutex_counter++;  // Protected by mutex
+        int temp = mutex_counter;
+        temp++;
+        mutex_counter = temp;
     }
 }
 ```
