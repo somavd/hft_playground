@@ -9,34 +9,42 @@ Demonstrates why atomicity is required in multithreaded programs by comparing un
 
 ## Compile and Run
 
+**To see the data race bug (recommended):**
 ```bash
 cd atomicity
+g++ -O0 -std=c++20 -pthread plain_vs_mutex.cpp -o plain_vs_mutex
+./plain_vs_mutex
+```
+
+**With optimization (may accidentally "fix" the bug):**
+```bash
 g++ -O3 -std=c++20 -pthread plain_vs_mutex.cpp -o plain_vs_mutex
 ./plain_vs_mutex
 ```
 
 ## Expected Output
 
+**With `-O0` (no optimization):**
 ```
 === Atomicity Demo: Plain vs Mutex ===
-Threads: 2, Iterations per thread: 10000000
-Expected result: 20000000
+Threads: 8, Iterations per thread: 1000000
+Expected result: 8000000
 
 Plain Counter (no synchronization):
-  Result: 12345678 (Expected: 20000000)
-  Time: 15 ms
+  Result: 4567890 (Expected: 8000000)
+  Time: 120 ms
   Status: WRONG - Data race!
 
 Mutex Counter (synchronized):
-  Result: 20000000 (Expected: 20000000)
-  Time: 120 ms
+  Result: 8000000 (Expected: 8000000)
+  Time: 450 ms
   Status: CORRECT
-
-=== Summary ===
-Plain counter: Data race bug
-Mutex counter: Always correct (atomicity guaranteed)
-Performance overhead: 120ms vs 15ms
 ```
+
+**With `-O3` (optimization):**
+The plain counter may show the "correct" result because the compiler optimizes the expanded read-modify-write into a single atomic instruction. This is **undefined behavior** — the code is still buggy, but the compiler accidentally "fixes" it.
+
+So just for demo purpose, I am using `-O0` flag
 
 ## What is Atomicity?
 
