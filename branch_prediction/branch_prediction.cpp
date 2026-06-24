@@ -1,41 +1,57 @@
 #include <iostream>
 #include <vector>
 #include <chrono>
-#include <cstdlib>
+#include <algorithm>
+#include <random>
 
-constexpr int ITERATIONS = 1'000'000;
+constexpr int SIZE = 1'000'000;
+constexpr int THRESHOLD = 500'000;
+
+volatile long long sink = 0;
 
 int main() {
-    std::vector<int> predictableData(ITERATIONS);
-    std::vector<int> randomData(ITERATIONS);
-    volatile long long sum = 0;
+    std::cout << "=== Branch Prediction Demo ===\n";
+    std::cout << "Same data, same work, different branch predictability\n\n";
 
-    for(int i=0;i<ITERATIONS;i++) {
-        predictableData[i] = i;
-        randomData[i] = rand();
+    // Generate random data
+    std::mt19937 gen(42);
+    std::uniform_int_distribution<int> dist(0, SIZE);
+    std::vector<int> data(SIZE);
+    for (int i = 0; i < SIZE; ++i) {
+        data[i] = dist(gen);
     }
 
-    sum = 0;
+    // Test 1: Unsorted data (random branch pattern)
+    long long sum = 0;
     auto start = std::chrono::high_resolution_clock::now();
-    for(int i=0;i<ITERATIONS;i++) {
-        if(predictableData[i] > 500000) {
-            sum += predictableData[i];
+    for (int i = 0; i < SIZE; ++i) {
+        if (data[i] > THRESHOLD) {
+            sum += data[i];
         }
     }
     auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    std::cout << "Time taken for predictable data: " << duration.count() << " microseconds" << std::endl;
+    sink = sum;
+    auto unsorted_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    std::cout << "Unsorted (random branches):  " << unsorted_time.count() << " us\n";
 
+    // Test 2: Sorted data (predictable branch pattern)
+    std::sort(data.begin(), data.end());
     sum = 0;
     start = std::chrono::high_resolution_clock::now();
-    for(int i=0;i<ITERATIONS;i++) {
-        if(randomData[i] > 50) {
-            sum += randomData[i];
+    for (int i = 0; i < SIZE; ++i) {
+        if (data[i] > THRESHOLD) {
+            sum += data[i];
         }
     }
     end = std::chrono::high_resolution_clock::now();
-    duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    std::cout << "Time taken for random data: " << duration.count() << " microseconds" << std::endl;
-    
+    sink = sum;
+    auto sorted_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    std::cout << "Sorted (predictable):       " << sorted_time.count() << " us\n";
+
+    if (sorted_time.count() > 0) {
+        std::cout << "Misprediction penalty:       " 
+                  << (double)unsorted_time.count() / sorted_time.count() << "x slower\n";
+    }
+
     return 0;
 }

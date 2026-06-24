@@ -3,21 +3,18 @@
 #include <mutex>
 #include <chrono>
 
-constexpr int NUM_THREADS = 8;  // More threads = more contention
+constexpr int NUM_THREADS = 8;
 constexpr int ITERATIONS = 1'000'000;
 
-// Plain counter - no synchronization (data race!)
 int plain_counter = 0;
-
-// Mutex-protected counter
 int mutex_counter = 0;
 std::mutex mtx;
 
 void plain_worker() {
     for (int i = 0; i < ITERATIONS; ++i) {
-        int temp = plain_counter;  // Read
-        temp++;                    // Modify
-        plain_counter = temp;      // Write (expanded to increase race window)
+        int temp = plain_counter;
+        temp++;
+        plain_counter = temp;
     }
 }
 

@@ -23,7 +23,7 @@ void mutex_worker() {
 
 void atomic_worker() {
     for (int i = 0; i < ITERATIONS; ++i) {
-        atomic_counter++;
+        atomic_counter.fetch_add(1, std::memory_order_relaxed);
     }
 }
 

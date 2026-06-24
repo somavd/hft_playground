@@ -3,35 +3,46 @@
 #include <vector>
 #include <chrono>
 
-constexpr int ITERATIONS = 1'000'000;
+constexpr int SIZE = 1'000'000;
+
+volatile long long sink = 0;
 
 int main() {
-    std::list<int> list;
-    std::vector<int> vector;
-    
-    for(int i=0;i<ITERATIONS;i++) {
-        list.push_back(i);
-        vector.push_back(i);
+    std::cout << "=== List vs Vector Iteration (" << SIZE << " elements) ===\n";
+
+    std::list<int> lst;
+    std::vector<int> vec;
+    vec.reserve(SIZE);
+
+    for (int i = 0; i < SIZE; ++i) {
+        lst.push_back(i);
+        vec.push_back(i);
     }
 
-    volatile long long sum = 0;
-
+    long long sum = 0;
     auto start = std::chrono::high_resolution_clock::now();
-    for(int x: list) {
+    for (int x : lst) {
         sum += x;
     }
     auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    std::cout << "List time: " << duration.count() << " microseconds" << std::endl;
+    sink = sum;
+    auto list_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    std::cout << "List time:   " << list_time.count() << " us\n";
 
     sum = 0;
     start = std::chrono::high_resolution_clock::now();
-    for(int x: vector) {
+    for (int x : vec) {
         sum += x;
     }
     end = std::chrono::high_resolution_clock::now();
-    duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    std::cout << "Vector time: " << duration.count() << " microseconds" << std::endl;
+    sink = sum;
+    auto vec_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    std::cout << "Vector time: " << vec_time.count() << " us\n";
+
+    if (vec_time.count() > 0) {
+        std::cout << "Vector is " << (double)list_time.count() / vec_time.count()
+                  << "x faster (cache locality)\n";
+    }
 
     return 0;
 }
