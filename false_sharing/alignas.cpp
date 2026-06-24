@@ -3,20 +3,16 @@
 #include <chrono>
 #include <thread>
 
-constexpr int NUM_ITERATIONS = 100000000;
+constexpr int NUM_ITERATIONS = 1000000000;
 
 struct FalseSharing {
     std::atomic<long long> counter1 {0};
     std::atomic<long long> counter2 {0};
 };
 
-struct alignas(64) PaddedAtomic {
-    std::atomic<long long> value {0};
-};
-
 struct NoFalseSharing {
-    PaddedAtomic counter1;
-    PaddedAtomic counter2;
+    alignas(64) std::atomic<long long> counter1 {0};
+    alignas(64) std::atomic<long long> counter2 {0};
 };
 
 void runFalseSharing() {
@@ -48,13 +44,13 @@ void runNoFalseSharing() {
     
     std::thread t1([&data]() {
         for (int i = 0; i < NUM_ITERATIONS; ++i) {
-            data.counter1.value.fetch_add(1, std::memory_order_relaxed);
+            data.counter1.fetch_add(1, std::memory_order_relaxed);
         }
     });
     
     std::thread t2([&data]() {
         for (int i = 0; i < NUM_ITERATIONS; ++i) {
-            data.counter2.value.fetch_add(1, std::memory_order_relaxed);
+            data.counter2.fetch_add(1, std::memory_order_relaxed);
         }
     });
     

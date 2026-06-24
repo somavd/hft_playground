@@ -111,17 +111,23 @@ Thread 2 writes counter2 → Only affects cache line 1
 
 ## Benchmark Results
 
-### Expected Performance Difference
+### Actual Performance (1B iterations)
 ```
 Running Benchmark...
-False sharing time: XXX ms      // Slower due to cache contention
-No false sharing time: XXX ms   // Faster due to separate cache lines
+False sharing time: 6945 ms      // Slower due to cache contention
+No false sharing time: 1671 ms   // Faster due to separate cache lines
 ```
 
-**Typical Results:**
-- False sharing: 2-10x slower
-- Performance gain depends on CPU architecture and core count
-- More significant on systems with more cores
+**Results:**
+- **4.15x speedup** with cache line alignment
+- False sharing: 6945ms
+- No false sharing: 1671ms
+
+**Note:** The speedup depends on:
+- **Workload intensity** — More iterations = more contention = higher penalty
+- **CPU architecture** — Some CPUs handle cache line bouncing better
+- **Thread scheduling** — OS might schedule threads on same core sometimes
+- **Core count** — More cores = more potential for cache line bouncing
 
 ### Why the Difference?
 1. **Cache Misses**: False sharing causes frequent cache misses
@@ -342,11 +348,3 @@ int main() {
 - Use hardware performance counters
 - Monitor cache miss rates
 - Track cache line invalidations
-
-## Further Reading
-
-- [False Sharing](https://en.wikipedia.org/wiki/False_sharing)
-- [C++ alignas specifier](https://en.cppreference.com/w/cpp/language/alignas)
-- [Cache Coherence](https://en.wikipedia.org/wiki/Cache_coherence)
-- [HFT Performance Optimization](https://www.highfrequencytrading.com/)
-- [Intel Optimization Manual](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html)
