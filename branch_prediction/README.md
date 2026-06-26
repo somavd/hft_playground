@@ -21,10 +21,15 @@ g++ -O3 -std=c++20 branch_prediction.cpp -o branch_prediction
 === Branch Prediction Demo ===
 Same data, same work, different branch predictability
 
-Unsorted (random branches):  XXXXX us
-Sorted (predictable):       XXXXX us
-Misprediction penalty:       X.XXx slower
+Unsorted (random branches):  5632 us
+Sorted (predictable):       266 us
+Misprediction penalty:       21.17x slower
 ```
+
+**Note**: Results may vary based on:
+- Compiler optimization level (-O0 shows larger penalty, -O2/-O3 may optimize branches)
+- CPU architecture and branch predictor
+- System load and cache state
 
 ## Explanation
 

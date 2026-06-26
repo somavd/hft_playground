@@ -22,29 +22,26 @@ int main() {
     }
 
     // Test 1: Unsorted data (random branch pattern)
-    long long sum = 0;
     auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < SIZE; ++i) {
         if (data[i] > THRESHOLD) {
-            sum += data[i];
+            sink += data[i];
         }
     }
     auto end = std::chrono::high_resolution_clock::now();
-    sink = sum;
     auto unsorted_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     std::cout << "Unsorted (random branches):  " << unsorted_time.count() << " us\n";
 
     // Test 2: Sorted data (predictable branch pattern)
     std::sort(data.begin(), data.end());
-    sum = 0;
+    sink = 0;
     start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < SIZE; ++i) {
         if (data[i] > THRESHOLD) {
-            sum += data[i];
+            sink += data[i];
         }
     }
     end = std::chrono::high_resolution_clock::now();
-    sink = sum;
     auto sorted_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     std::cout << "Sorted (predictable):       " << sorted_time.count() << " us\n";
 
