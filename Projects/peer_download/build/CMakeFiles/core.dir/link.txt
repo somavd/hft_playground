@@ -1,0 +1,2 @@
+/usr/bin/ar qc libcore.a CMakeFiles/core.dir/core/node.cpp.o CMakeFiles/core.dir/core/http_range_fetch.cpp.o CMakeFiles/core.dir/core/hasher.cpp.o CMakeFiles/core.dir/core/reassembler.cpp.o CMakeFiles/core.dir/core/chunk_manager.cpp.o CMakeFiles/core.dir/core/peer_discovery.cpp.o
+/usr/bin/ranlib libcore.a

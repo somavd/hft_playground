@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peer Download — Architecture</title>
+<style>
+  :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #c9d1d9; --accent: #58a6ff; --green: #3fb950; --orange: #d29922; --red: #f85149; --purple: #bc8cff; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 2rem; max-width: 1200px; margin: 0 auto; }
+  h1 { color: var(--accent); font-size: 2rem; margin-bottom: 0.5rem; }
+  h2 { color: var(--accent); font-size: 1.4rem; margin: 2rem 0 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3rem; }
+  h3 { color: var(--purple); font-size: 1.1rem; margin: 1.2rem 0 0.5rem; }
+  p, li { margin-bottom: 0.5rem; }
+  code { background: #1c2128; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; color: var(--green); }
+  pre { background: #1c2128; padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 1rem 0; border: 1px solid var(--border); }
+  pre code { padding: 0; background: none; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem; margin: 1rem 0; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+  th, td { padding: 0.5rem 0.8rem; border: 1px solid var(--border); text-align: left; }
+  th { background: #1c2128; color: var(--accent); }
+  .diagram { background: #1c2128; border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin: 1rem 0; font-family: monospace; white-space: pre; line-height: 1.8; overflow-x: auto; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; font-weight: 600; }
+  .tag-blue { background: #1f3a5f; color: var(--accent); }
+  .tag-green { background: #1a3a2a; color: var(--green); }
+  .tag-orange { background: #3a2a1a; color: var(--orange); }
+  .flow-step { display: flex; align-items: flex-start; gap: 1rem; margin: 0.5rem 0; }
+  .flow-num { min-width: 28px; height: 28px; background: var(--accent); color: var(--bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85em; }
+  .flow-text { flex: 1; }
+  .highlight { color: var(--accent); font-weight: 600; }
+  ul { padding-left: 1.5rem; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<h1>Peer Download</h1>
+<p>Distributed file downloader — split, download in parallel, reassemble.</p>
+
+<h2>System Diagram</h2>
+<div class="diagram">
+┌─────────────────────────────────────────────────────────────┐
+│                     COORDINATOR (:5001)                      │
+│                                                              │
+│  ChunkManager    PeerDiscovery    PeerAddr map               │
+│  ┌──────────┐    ┌───────────┐    ┌──────────────────┐      │
+│  │ 51 chunks│    │ TCP :5001 │    │ 1→127.0.0.1:6001 │      │
+│  │ 2 peers  │    │ HELLO     │    │ 2→127.0.0.1:6002 │      │
+│  │ bitmaps  │    │ LEAVE     │    └──────────────────┘      │
+│  └──────────┘    │ ASSIGN    │                               │
+│                  └───────────┘                               │
+└─────────────┬───────────────────────────┬───────────────────┘
+              │ CHUNK_ASSIGNMENT          │ CHUNK_ASSIGNMENT
+              ▼                           ▼
+┌─────────────────────┐     ┌─────────────────────┐
+│   PEER NODE 1 (:6001)│     │   PEER NODE 2 (:6002)│
+│                      │     │                      │
+│  Chunks: 0,2,4,6... │     │  Chunks: 1,3,5,7... │
+│  Dir: node_1/        │     │  Dir: node_2/        │
+│                      │     │                      │
+│  HTTP ──► Server     │     │  HTTP ──► Server     │
+│  Range: 0-1048575    │     │  Range: 1048576-...  │
+│                      │     │                      │
+│  Reassemble → .mp4   │     │  Reassemble → .mp4   │
+└──────────────────────┘     └──────────────────────┘
+</div>
+
+<h2>Components</h2>
+<div class="grid">
+  <div class="card">
+    <h3>coordinator <span class="tag tag-blue">binary</span></h3>
+    <p><code>desktop-test-harness/coordinator.cpp</code></p>
+    <ul>
+      <li>Listens for HELLO/LEAVE messages</li>
+      <li>Maintains peer address map</li>
+      <li>Runs round-robin chunk assignment</li>
+      <li>Broadcasts CHUNK_ASSIGNMENT to <strong>all</strong> peers on cluster change</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>peer_node <span class="tag tag-green">binary</span></h3>
+    <p><code>desktop-test-harness/peer_node.cpp</code></p>
+    <ul>
+      <li>Sends HELLO to coordinator on start</li>
+      <li>Waits for CHUNK_ASSIGNMENT</li>
+      <li>Downloads assigned chunks via HTTP range</li>
+      <li>Reassembles into output file</li>
+      <li>Sends LEAVE on exit</li>
+    </ul>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h3>ChunkManager <span class="tag tag-orange">core</span></h3>
+    <p><code>core/chunk_manager.h/cpp</code></p>
+    <ul>
+      <li>Splits file into 1 MB chunks</li>
+      <li>Maintains peer registry + chunk bitmaps</li>
+      <li>Round-robin assignment algorithm</li>
+      <li>Tracks download status per chunk</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>PeerDiscovery <span class="tag tag-orange">core</span></h3>
+    <p><code>core/peer_discovery.h/cpp</code></p>
+    <ul>
+      <li>TCP server + client</li>
+      <li>3 message types: HELLO, LEAVE, CHUNK_ASSIGNMENT</li>
+      <li>Network byte order (htonl/ntohl)</li>
+      <li>Callback-based message handling</li>
+    </ul>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h3>HttpRangeFetch <span class="tag tag-orange">core</span></h3>
+    <p><code>core/http_range_fetch.h/cpp</code></p>
+    <ul>
+      <li>libcurl-based HTTP GET with Range header</li>
+      <li>Writes directly to file</li>
+      <li>Checks Accept-Ranges support</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Hasher + Reassembler <span class="tag tag-orange">core</span></h3>
+    <p><code>core/hasher.h/cpp</code> &amp; <code>core/reassembler.h/cpp</code></p>
+    <ul>
+      <li>SHA-256 via OpenSSL</li>
+      <li>Offset-based reassembly (ftruncate + seekp)</li>
+    </ul>
+  </div>
+</div>
+
+<h2>Wire Protocol</h2>
+<p>All TCP. All multi-byte fields in <strong>network byte order</strong> (big-endian).</p>
+
+<table>
+  <tr><th>Message</th><th>ID</th><th>Direction</th><th>Format</th><th>Size</th></tr>
+  <tr><td>HELLO</td><td>1</td><td>peer → coord</td><td><code>[type:1][node_id:4][port:2]</code></td><td>7 bytes</td></tr>
+  <tr><td>LEAVE</td><td>2</td><td>peer → coord</td><td><code>[type:1][node_id:4]</code></td><td>5 bytes</td></tr>
+  <tr><td>CHUNK_ASSIGNMENT</td><td>3</td><td>coord → peer</td><td><code>[type:1][count:4][chunk_id:4 × N]</code></td><td>5 + 4N bytes</td></tr>
+</table>
+
+<h2>Control Flow</h2>
+
+<h3>1. Startup</h3>
+<div class="card">
+  <div class="flow-step"><div class="flow-num">1</div><div class="flow-text">Coordinator starts, binds TCP on port 5001</div></div>
+  <div class="flow-step"><div class="flow-num">2</div><div class="flow-text">Peer starts, creates <code>node_N/</code> directory, initializes ChunkManager (computes chunk list from file size)</div></div>
+  <div class="flow-step"><div class="flow-num">3</div><div class="flow-text">Peer adds self to local peer registry, starts TCP listener</div></div>
+  <div class="flow-step"><div class="flow-num">4</div><div class="flow-text">Peer sends <span class="highlight">HELLO</span> to coordinator (node_id + listen_port)</div></div>
+  <div class="flow-step"><div class="flow-num">5</div><div class="flow-text">Coordinator receives HELLO → adds peer → runs round-robin → sends <span class="highlight">CHUNK_ASSIGNMENT</span> to <strong>all</strong> peers</div></div>
+  <div class="flow-step"><div class="flow-num">6</div><div class="flow-text">Peer receives CHUNK_ASSIGNMENT → updates local bitmap → begins downloading</div></div>
+</div>
+
+<h3>2. Download</h3>
+<div class="card">
+  <div class="flow-step"><div class="flow-num">1</div><div class="flow-text">For each assigned chunk ID, compute byte range: <code>[id × 1MB, min((id+1) × 1MB - 1, file_size - 1)]</code></div></div>
+  <div class="flow-step"><div class="flow-num">2</div><div class="flow-text">HTTP GET with <code>Range: bytes=start-end</code> → save to <code>node_N/chunk_ID.bin</code></div></div>
+  <div class="flow-step"><div class="flow-num">3</div><div class="flow-text">SHA-256 hash the chunk file, mark as downloaded</div></div>
+  <div class="flow-step"><div class="flow-num">4</div><div class="flow-text">Log progress every 10 chunks: <code>[NODE 1] progress: 10/26 chunks downloaded</code></div></div>
+</div>
+
+<h3>3. Reassembly</h3>
+<div class="card">
+  <div class="flow-step"><div class="flow-num">1</div><div class="flow-text">Pre-allocate output file to <code>file_size</code> bytes via <code>ftruncate</code></div></div>
+  <div class="flow-step"><div class="flow-num">2</div><div class="flow-text">For each downloaded chunk: <code>seekp(offset)</code> → <code>write(data)</code></div></div>
+  <div class="flow-step"><div class="flow-num">3</div><div class="flow-text">SHA-256 hash final file, print result</div></div>
+</div>
+
+<h3>4. Shutdown</h3>
+<div class="card">
+  <div class="flow-step"><div class="flow-num">1</div><div class="flow-text">Peer sends <span class="highlight">LEAVE</span> to coordinator</div></div>
+  <div class="flow-step"><div class="flow-num">2</div><div class="flow-text">Coordinator removes peer, reassigns remaining, broadcasts new assignments</div></div>
+</div>
+
+<h2>Round-Robin Assignment</h2>
+<div class="card">
+<pre><code>Chunks: [0] [1] [2] [3] [4] [5] [6] ... [50]
+Peers:   P1  P2  P1  P2  P1  P2  P1  ...  P1
+
+Result: P1 gets 26 chunks (even IDs)
+        P2 gets 25 chunks (odd IDs)</code></pre>
+<p>When a new peer joins or leaves, all bitmaps are cleared and reassigned. The coordinator then sends the new assignment to <strong>every</strong> peer.</p>
+</div>
+
+<h2>Sequence Diagram</h2>
+<div class="diagram">
+  Coordinator         Peer 1              Peer 2             HTTP Server
+      │                  │                   │                    │
+      │◄── HELLO(1,6001)─┤                   │                    │
+      │                  │                   │                    │
+      │── ASSIGN[0..50]─►│                   │                    │
+      │                  │                   │                    │
+      │                  │──GET Range:0-1M──►│◄───────────────────│
+      │                  │◄─────── 206 ──────│                    │
+      │                  │                   │                    │
+      │◄── HELLO(2,6002)─┼───────────────────┤                    │
+      │                  │                   │                    │
+      │── ASSIGN[even]──►│                   │                    │
+      │── ASSIGN[odd]───►├───────────────────┤                    │
+      │                  │                   │                    │
+      │                  │   (both download their chunks)         │
+      │                  │                   │                    │
+      │                  │── reassemble ──►  video1.mp4           │
+      │                  │                   │── reassemble ──► video2.mp4
+      │                  │                   │                    │
+      │◄── LEAVE(1) ─────┤                   │                    │
+      │◄── LEAVE(2) ─────┼───────────────────┤                    │
+</div>
+
+<h2>Key Code Paths</h2>
+
+<h3>coordinator.cpp — onPeerJoin</h3>
+<div class="card">
+<pre><code>net.onPeerJoin([&](uint32_t id, const std::string& ip, uint16_t port) {
+    addrs[id] = {ip, port};              // Store peer address
+    cm.addPeer(p);                       // Register in ChunkManager
+    cm.assignChunksRoundRobin();         // Recompute assignment
+    broadcastAssignments();              // Send to ALL peers
+});</code></pre>
+</div>
+
+<h3>peer_node.cpp — onChunkAssign</h3>
+<div class="card">
+<pre><code>net.onChunkAssign([&](const std::vector&lt;uint32_t&gt;& ids) {
+    auto it = peers.find(node_id);       // Find self in registry
+    it->second.chunk_bitmap.reset();     // Clear old assignment
+    for (uint32_t id : ids)
+        it->second.chunk_bitmap.set(id); // Set new chunks
+});</code></pre>
+</div>
+
+<h3>ChunkManager — Round Robin</h3>
+<div class="card">
+<pre><code>for (size_t i = 0; i < chunks.size(); ++i) {
+    auto it = peers.begin();
+    std::advance(it, i % num_peers);     // Cycle through peers
+    it->second.chunk_bitmap.set(i);      // Assign chunk i
+}</code></pre>
+</div>
+
+<h2>Build &amp; Dependencies</h2>
+<table>
+  <tr><th>Dependency</th><th>Purpose</th><th>Detection</th></tr>
+  <tr><td>libcurl</td><td>HTTP range requests</td><td><code>find_package(CURL)</code></td></tr>
+  <tr><td>OpenSSL</td><td>SHA-256 hashing</td><td><code>find_package(OpenSSL)</code></td></tr>
+  <tr><td>POSIX sockets</td><td>TCP networking</td><td>System headers</td></tr>
+  <tr><td>C++17</td><td>Structured bindings, etc.</td><td><code>CMAKE_CXX_STANDARD 17</code></td></tr>
+</table>
+
+<h2>Limitations (MVP)</h2>
+<div class="card">
+  <ul>
+    <li><strong>No P2P chunk exchange</strong> — Peers download from HTTP server only, no peer-to-peer transfer yet</li>
+    <li><strong>Snapshot assignment</strong> — Mid-download reassignment doesn't cancel in-progress chunks</li>
+    <li><strong>No resume</strong> — Crash requires full re-download of assigned chunks</li>
+    <li><strong>No master hash manifest</strong> — Each peer hashes its own chunks independently</li>
+  </ul>
+</div>
+
+</body>
+</html>

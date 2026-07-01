@@ -1,0 +1,62 @@
+[
+{
+  "directory": "/Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/build",
+  "command": "/usr/bin/c++ -DUSE_OPENSSL -isystem /opt/homebrew/include -std=c++17 -arch arm64 -Wall -Wextra -Wpedantic -o CMakeFiles/core.dir/core/node.cpp.o -c /Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/core/node.cpp",
+  "file": "/Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/core/node.cpp",
+  "output": "CMakeFiles/core.dir/core/node.cpp.o"
+},
+{
+  "directory": "/Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/build",
+  "command": "/usr/bin/c++ -DUSE_OPENSSL -isystem /opt/homebrew/include -std=c++17 -arch arm64 -Wall -Wextra -Wpedantic -o CMakeFiles/core.dir/core/http_range_fetch.cpp.o -c /Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/core/http_range_fetch.cpp",
+  "file": "/Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/core/http_range_fetch.cpp",
+  "output": "CMakeFiles/core.dir/core/http_range_fetch.cpp.o"
+},
+{
+  "directory": "/Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/build",
+  "command": "/usr/bin/c++ -DUSE_OPENSSL -isystem /opt/homebrew/include -std=c++17 -arch arm64 -Wall -Wextra -Wpedantic -o CMakeFiles/core.dir/core/hasher.cpp.o -c /Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/core/hasher.cpp",
+  "file": "/Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/core/hasher.cpp",
+  "output": "CMakeFiles/core.dir/core/hasher.cpp.o"
+},
+{
+  "directory": "/Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/build",
+  "command": "/usr/bin/c++ -DUSE_OPENSSL -isystem /opt/homebrew/include -std=c++17 -arch arm64 -Wall -Wextra -Wpedantic -o CMakeFiles/core.dir/core/reassembler.cpp.o -c /Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/core/reassembler.cpp",
+  "file": "/Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/core/reassembler.cpp",
+  "output": "CMakeFiles/core.dir/core/reassembler.cpp.o"
+},
+{
+  "directory": "/Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/build",
+  "command": "/usr/bin/c++ -DUSE_OPENSSL -isystem /opt/homebrew/include -std=c++17 -arch arm64 -Wall -Wextra -Wpedantic -o CMakeFiles/core.dir/core/chunk_manager.cpp.o -c /Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/core/chunk_manager.cpp",
+  "file": "/Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/core/chunk_manager.cpp",
+  "output": "CMakeFiles/core.dir/core/chunk_manager.cpp.o"
+},
+{
+  "directory": "/Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/build",
+  "command": "/usr/bin/c++ -DUSE_OPENSSL -isystem /opt/homebrew/include -std=c++17 -arch arm64 -Wall -Wextra -Wpedantic -o CMakeFiles/core.dir/core/peer_discovery.cpp.o -c /Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/core/peer_discovery.cpp",
+  "file": "/Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/core/peer_discovery.cpp",
+  "output": "CMakeFiles/core.dir/core/peer_discovery.cpp.o"
+},
+{
+  "directory": "/Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/build",
+  "command": "/usr/bin/c++ -DUSE_OPENSSL -isystem /opt/homebrew/include -std=c++17 -arch arm64 -o CMakeFiles/peer_node.dir/desktop-test-harness/peer_node.cpp.o -c /Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/desktop-test-harness/peer_node.cpp",
+  "file": "/Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/desktop-test-harness/peer_node.cpp",
+  "output": "CMakeFiles/peer_node.dir/desktop-test-harness/peer_node.cpp.o"
+},
+{
+  "directory": "/Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/build",
+  "command": "/usr/bin/c++ -DUSE_OPENSSL -isystem /opt/homebrew/include -std=c++17 -arch arm64 -o CMakeFiles/coordinator.dir/desktop-test-harness/coordinator.cpp.o -c /Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/desktop-test-harness/coordinator.cpp",
+  "file": "/Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/desktop-test-harness/coordinator.cpp",
+  "output": "CMakeFiles/coordinator.dir/desktop-test-harness/coordinator.cpp.o"
+},
+{
+  "directory": "/Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/build",
+  "command": "/usr/bin/c++ -DUSE_OPENSSL -isystem /opt/homebrew/include -std=c++17 -arch arm64 -o CMakeFiles/test_hasher.dir/tests/test_hasher.cpp.o -c /Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/tests/test_hasher.cpp",
+  "file": "/Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/tests/test_hasher.cpp",
+  "output": "CMakeFiles/test_hasher.dir/tests/test_hasher.cpp.o"
+},
+{
+  "directory": "/Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/build",
+  "command": "/usr/bin/c++ -DUSE_OPENSSL -isystem /opt/homebrew/include -std=c++17 -arch arm64 -o CMakeFiles/test_half_fetch.dir/test_half_fetch.cpp.o -c /Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/test_half_fetch.cpp",
+  "file": "/Users/somayyaavadut/Downloads/Avadut/workspace/personal/hft_playground/Projects/peer_download/test_half_fetch.cpp",
+  "output": "CMakeFiles/test_half_fetch.dir/test_half_fetch.cpp.o"
+}
+]
